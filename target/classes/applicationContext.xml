@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+<!--    扫描属性配置 -->
+    <context:property-placeholder system-properties-mode="NEVER" location="classpath:jdbc.properties"/>
+<!--    连接池-->
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+        <property name="driverClassName" value="${driver}"/>
+        <property name="username" value="${user}"/>
+        <property name="password" value="${password}"/>
+        <property name="url" value="${url}"/>
+<!--        最大连接数-->
+        <property name="maxTotal" value="20"/>
+<!--        最大限制连接数-->
+        <property name="maxIdle" value="5"/>
+    </bean>
+<!--    mybatis的核心类-->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor"/>
+            </array>
+        </property>
+    </bean>
+<!--    扫描mapper-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.kkb.dao"/>
+    </bean>
+<!--    事务配置-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+
+    </bean>
+<!--    事务通知-->
+    <tx:advice id="interceptor" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="find*" propagation="SUPPORTS" read-only="true"/>
+            <tx:method name="get*" propagation="SUPPORTS" read-only="true"/>
+            <tx:method name="select*" propagation="SUPPORTS" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+<!--    组织切面-->
+    <aop:config>
+        <aop:pointcut id="transactionPointCut" expression="execution(* com.kkb.service.*.*(..))"/>
+        <aop:advisor advice-ref="interceptor" pointcut-ref="transactionPointCut"></aop:advisor>
+    </aop:config>
+<!--    注解扫描-->
+    <context:component-scan base-package="com.kkb.service,com.kkb.common"/>
+</beans>

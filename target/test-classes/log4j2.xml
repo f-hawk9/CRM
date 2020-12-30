@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--   status="WARN" 用于设置log4j框架本身的日志级别-->
+<Configuration status="WARN">
+<!--    追加器  用于将日志真正的写入到某个地方  可以是控制台 文件 数据库 或者邮箱-->
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+<!--            指定日志的格式-->
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <File name="fileAppender" fileName="logs/app.log" append="false"><!--默认以当前项目为相对路径-->
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger - %msg%n"/>
+        </File>
+    </Appenders>
+<!--    日志记录器 可以针对性的配置日志输出的位置-->
+    <Loggers>
+<!--        level设置日志的级别-->
+        <Root level="warn">
+<!--            关联某个appender-->
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="fileAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>
